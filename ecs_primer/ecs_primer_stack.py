@@ -1,4 +1,7 @@
 from aws_cdk import core
+import aws_cdk.aws_ec2 as ec2
+import aws_cdk.aws_ecs as ecs
+import aws_cdk.aws_ecs_patterns as ecs_patterns
 
 
 class EcsPrimerStack(core.Stack):
@@ -6,4 +9,20 @@ class EcsPrimerStack(core.Stack):
     def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # The code that defines your stack goes here
+        myVpc = ec2.Vpc(self, "MyVPC", max_azs=2)
+        # cdk deploy
+        myCluster = ecs.Cluster(self, "MyCluster", vpc=myVpc)
+        # cdk diff
+        fargateService = ecs_patterns. \
+            ApplicationLoadBalancedFargateService(
+                self,
+                "MyFargateApp",
+                cluster=myCluster,
+                listener_port=80,  # the default container port is port 80
+                task_image_options=
+                ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
+                    image=ecs.ContainerImage.from_asset("./app/")
+                )
+            )
+        # cdk bootstrap
+        # Base: https: // www.youtube.com / watch?v = bz4jTx4v - l8
